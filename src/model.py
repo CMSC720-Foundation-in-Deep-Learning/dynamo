@@ -118,5 +118,6 @@ if __name__ == "__main__":
     init = 1. + np.random.uniform(0.,1.,size=(6,))
     tspan = np.arange(0,10,1)
     physics_model = PhysicsModel(name='kuramoto1')
+    omega_value = 10+10*np.random(1,10)
     y = odeint(physics_model.dynamical_model, init, tspan, args=(omega_value,))
    
