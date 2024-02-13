@@ -4,15 +4,13 @@ Written by Raunak Dey
 '''
 
 
-#!/usr/bin/env python
-
 import numpy as np
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
-import dataclasses 
+from dataclasses import dataclass
 
 
-@dataclasses
+@dataclass
 class PhysicsModel:
     name: str = None #name of model
     adjacency_matrix: 'np.ndarray' = None
@@ -22,7 +20,7 @@ class PhysicsModel:
     time : 'np.ndarray' = None
 
 
-    def __post__init(self):
+    def __post_init__(self):
         #check if model is a valid model stored in our functions.
         if self.name not in ['kuramoto1','kuramoto2','michaelis-menten','roessler']:
             raise NameError("Invalid Input model. Sorry model not found. Please check spelling of input keywords.")
@@ -55,15 +53,22 @@ class PhysicsModel:
     # already taken care of the default values and not naming stuff in the post-init method
     # that is how I like to write 
     # if you don't like this, feel free to suggest soemthing else
-    def dynamical_model(self,omega):
-        y = self.initial_values
-        t = self.time
-        A = self.adjacency_matrix
-        raise NotImplemented
+    def dynamical_model(self, omega):
+        dynamical_functions = {
+            'kuramoto1': self.kuramoto1,
+            'kuramoto2': self.kuramoto2,
+            'michaelis_menten': self.michaelis_menten,
+            'roessler': self.roessler
+        }
+        if self.name not in dynamical_functions:
+            raise ValueError("Invalid model name")
+        return dynamical_functions[self.name](self.initial_values, self.time, omega, self.adjacency_matrix)
+
+    
 
 
-
-    def kuramoto1(y,t,omega,A):
+    @staticmethod
+    def kuramoto1(y,t,A,omega):
         dydt = np.zeros((y.shape[0],))
         k = omega.shape[0]
         for i in range(k):
@@ -73,7 +78,8 @@ class PhysicsModel:
             dydt[i] = omega[i] + sum
         return(dydt)
     
-    def kuramoto2(y,t,omega,A):
+    @staticmethod
+    def kuramoto2(y,t,A,omega):
         dydt = np.zeros((y.shape[0],))
         k = omega.shape[0]
         for i in range(k):
@@ -83,7 +89,8 @@ class PhysicsModel:
             dydt[i] = omega[i] + sum
         return(dydt)
 
-    def michaelis_menten(y,t,omega,A):
+    @staticmethod
+    def michaelis_menten(y,t,A):
         dydt = np.zeros((y.shape[0],))
         k = A.shape[0]
         for i in range(k):
@@ -93,24 +100,23 @@ class PhysicsModel:
             dydt[i] = -y[i] + sum
         return(dydt)
 
+    @staticmethod   
+    def roessler(y,t,A):
+        dydt = np.zeros(y.shape[0])
+        N = A.shape[0]
+        for i in range(N):
+            sum = 0.0
+            for j in range(N):
+                sum += A[i,j]*np.sin(y[(3*j)+0])
+            dydt[(3*i)+0] = -y[(3*i)+1] - y[(3*i)+2] + sum
+            dydt[(3*i)+1] = y[(3*i)+0] + 0.1*y[(3*i)+1]
+            dydt[(3*i)+2] = 0.1 + (y[(3*i)+2]*(y[(3*i)+0]-18))
 
-def roessler(y,t,omega,A):
-    dydt = np.zeros(y.shape[0])
-    N = A.shape[0]
-
-    for i in range(N):
-        sum = 0.0
-        for j in range(N):
-            sum += A[i,j]*np.sin(y[(3*j)+0])
-        dydt[(3*i)+0] = -y[(3*i)+1] - y[(3*i)+2] + sum
-        dydt[(3*i)+1] = y[(3*i)+0] + 0.1*y[(3*i)+1]
-        dydt[(3*i)+2] = 0.1 + (y[(3*i)+2]*(y[(3*i)+0]-18))
-
-    return(dydt)
+        return(dydt)
 
 if __name__ == "__main__":
     init = 1. + np.random.uniform(0.,1.,size=(6,))
     tspan = np.arange(0,10,1)
-    y = odeint(roessler, init, tspan)
-
+    physics_model = PhysicsModel(name='kuramoto1')
+    y = odeint(physics_model.dynamical_model, init, tspan, args=(omega_value,))
    
