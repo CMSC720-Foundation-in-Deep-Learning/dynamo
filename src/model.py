@@ -8,13 +8,15 @@ import numpy as np
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
+import logging
+
 
 
 @dataclass
 class PhysicsModel:
     name: str = None #name of model
     adjacency_matrix: 'np.ndarray' = None
-    num_nodes: int = 5 #setting a default value to 5.
+    num_nodes: int = 10 #setting a default value to 5.
     initial_values: 'np.ndarray' = None
     noise_level: float = 0.0
     time : 'np.ndarray' = None
@@ -40,7 +42,7 @@ class PhysicsModel:
     # already taken care of the default values and not naming stuff in the post-init method
     # that is how I like to write 
     # if you don't like this, feel free to suggest soemthing else
-    def dynamical_model(self, y, t, omega, A):
+    def dynamical_model(self, y, t, A, omega):
         dynamical_functions = {
             'kuramoto1': self.kuramoto1,
             'kuramoto2': self.kuramoto2,
@@ -49,7 +51,7 @@ class PhysicsModel:
         }
         if self.name not in dynamical_functions:
             raise ValueError("Invalid model name")
-        return dynamical_functions[self.name](y, t, omega, A)
+        return dynamical_functions[self.name](y, t, A, omega)
     
 
 
@@ -101,9 +103,12 @@ class PhysicsModel:
         return(dydt)
 
 if __name__ == "__main__":
-    init = 1. + np.random.uniform(0.,1.,size=(6,))
-    tspan = np.arange(0,10,1)
-    physics_model = PhysicsModel(name='kuramoto1', time=tspan)  # Assigning tspan to time
-    omega_value = 10 + 10 * np.random.rand(1, 10)  # np.random needs to be np.random.rand
-    y = odeint(physics_model.dynamical_model, init, tspan, args=(omega_value, physics_model.adjacency_matrix))
+    init = 1. + np.random.uniform(0.,1.,size=(10,))
+    tspan = np.arange(0,100,1)
+    physics_model = PhysicsModel(name='kuramoto2', time=tspan)  # Assigning tspan to time
+    omega_value = 10 + 10 * np.random.rand(10,)  # np.random needs to be np.random.rand
 
+    y = odeint(physics_model.dynamical_model, init, tspan, args=(physics_model.adjacency_matrix,omega_value))
+
+    plt.plot(y)
+    plt.show()
