@@ -21,39 +21,26 @@ class PhysicsModel:
 
 
     def __post_init__(self):
-        #check if model is a valid model stored in our functions.
-        if self.name not in ['kuramoto1','kuramoto2','michaelis-menten','roessler']:
+        if self.name not in ['kuramoto1', 'kuramoto2', 'michaelis_menten', 'roessler']:
             raise NameError("Invalid Input model. Sorry model not found. Please check spelling of input keywords.")
         if self.name is None:
             raise NameError("Need to specify the model ")
-
         if self.adjacency_matrix is None:
-            #generate a fully connected adjacency matrix.
-            N = self.num_nodes
-            self.adjacency_matrix = np.ones((N,N))
-
-
+            self.adjacency_matrix = np.ones((self.num_nodes, self.num_nodes))
         if self.initial_values is None:
-            #generate a set of random values
-            N = self.num_nodes
-            np.random((1,N))
-
+            self.initial_values = np.random.rand(self.num_nodes)
         if self.time is None:
             raise ValueError("Time of simulation is needed")
-        
         if self.adjacency_matrix.shape[0] != self.adjacency_matrix.shape[1]:
             raise ValueError("Adjacency matrix should be a square matrix for an unipartite graph")
-
-        # we need size of the adjacency matrix equal to number of nodes
-        # and need initial values for all of them
         if self.initial_values.shape[0] != self.adjacency_matrix.shape[0]:
-            raise ValueError("Dimensions of number of nodes and adjacency matrix does not match.")
+            raise ValueError("Dimensions of number of nodes and adjacency matrix do not match.")
 
     
     # already taken care of the default values and not naming stuff in the post-init method
     # that is how I like to write 
     # if you don't like this, feel free to suggest soemthing else
-    def dynamical_model(self, omega):
+    def dynamical_model(self, y, t, omega, A):
         dynamical_functions = {
             'kuramoto1': self.kuramoto1,
             'kuramoto2': self.kuramoto2,
@@ -62,8 +49,7 @@ class PhysicsModel:
         }
         if self.name not in dynamical_functions:
             raise ValueError("Invalid model name")
-        return dynamical_functions[self.name](self.initial_values, self.time, omega, self.adjacency_matrix)
-
+        return dynamical_functions[self.name](y, t, omega, A)
     
 
 
@@ -117,7 +103,7 @@ class PhysicsModel:
 if __name__ == "__main__":
     init = 1. + np.random.uniform(0.,1.,size=(6,))
     tspan = np.arange(0,10,1)
-    physics_model = PhysicsModel(name='kuramoto1')
-    omega_value = 10+10*np.random(1,10)
-    y = odeint(physics_model.dynamical_model, init, tspan, args=(omega_value,))
-   
+    physics_model = PhysicsModel(name='kuramoto1', time=tspan)  # Assigning tspan to time
+    omega_value = 10 + 10 * np.random.rand(1, 10)  # np.random needs to be np.random.rand
+    y = odeint(physics_model.dynamical_model, init, tspan, args=(omega_value, physics_model.adjacency_matrix))
+
