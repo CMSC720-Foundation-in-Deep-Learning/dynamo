@@ -103,10 +103,11 @@ class PhysicsModel:
         return(dydt)
 
 if __name__ == "__main__":
-    init = 1. + np.random.uniform(0.,1.,size=(10,))
+    init = 1. + np.random.uniform(0.,30.,size=(10,))
     tspan = np.arange(0,100,1)
+    adjacency_matrix = np.random.randint(2, size=(10,10))
     physics_model = PhysicsModel(name='kuramoto2', time=tspan)  # Assigning tspan to time
-    omega_value = 10 + 10 * np.random.rand(10,)  # np.random needs to be np.random.rand
+    omega_value = 1 + 10 * np.random.rand(10,)  # np.random needs to be np.random.rand
 
     y = odeint(physics_model.dynamical_model, init, tspan, args=(physics_model.adjacency_matrix,omega_value))
 
