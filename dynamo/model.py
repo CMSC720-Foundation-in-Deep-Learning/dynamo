@@ -9,7 +9,7 @@ from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
 import logging
-
+import seaborn as sns
 
 
 @dataclass
@@ -20,6 +20,9 @@ class PhysicsModel:
     initial_values: 'np.ndarray' = None
     noise_level: float = 0.0
     time : 'np.ndarray' = None
+
+    #def __init__(self):
+    #    pass  # You can initialize anything here if needed
 
 
     def __post_init__(self):
@@ -111,5 +114,18 @@ if __name__ == "__main__":
 
     y = odeint(physics_model.dynamical_model, init, tspan, args=(physics_model.adjacency_matrix,omega_value))
 
-    plt.plot(y)
+    ## plotting -- separate function exists
+    num_nodes = y.shape[1]
+    for i in range(num_nodes):
+        plt.plot(tspan, y[:, i], label=f'Node {i+1}')
+    plt.xlabel('Time (arbitrary units)')
+    plt.ylabel('Time series (arbitrary units)')
+    plt.legend()
+    plt.show()
+
+    #boolean matrix -- separate function exists 
+    cmap = sns.color_palette("binary", as_cmap=True)
+    plt.imshow(adjacency_matrix, cmap=cmap)
+    plt.colorbar()
+    plt.text(-1, -1, '0: White (False)\n1: Black (True)', fontsize=10)
     plt.show()
