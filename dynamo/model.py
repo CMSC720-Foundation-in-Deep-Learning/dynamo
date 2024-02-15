@@ -11,6 +11,9 @@ from dataclasses import dataclass
 import logging
 import seaborn as sns
 
+# Setting logging level to DEBUG
+logging.basicConfig(level=logging.DEBUG)
+
 
 @dataclass
 class PhysicsModel:
@@ -105,12 +108,30 @@ class PhysicsModel:
 
         return(dydt)
 
+
+
+def read_data_file(file_path):
+    # Assuming the data file contains numerical data separated by whitespace
+    data_array = np.loadtxt(file_path)
+    return data_array
+
+
+
+
 if __name__ == "__main__":
-    init = 1. + np.random.uniform(0.,30.,size=(10,))
+    N = 25
+    init = 1. + np.random.uniform(0.,30.,size=(N,))
     tspan = np.arange(0,100,1)
-    adjacency_matrix = np.random.randint(2, size=(10,10))
-    physics_model = PhysicsModel(name='kuramoto2', time=tspan)  # Assigning tspan to time
-    omega_value = 1 + 10 * np.random.rand(10,)  # np.random needs to be np.random.rand
+    #adjacency_matrix = np.random.randint(2, size=(N,N))
+    physics_model = PhysicsModel(name='kuramoto2', time=tspan, num_nodes=N)  # Assigning tspan to time
+    #omega_value = 1 + 10 * np.random.rand(N,)  # np.random needs to be np.random.rand
+
+    # Example usage:
+    omega_value = read_data_file('./../res/data/frequencies.dat')
+    adjacency_matrix =  read_data_file('./../res/data/connection.dat')
+
+    logging.debug('omega_value{}'.format(omega_value.shape))
+    logging.debug('omega_value{}'.format(adjacency_matrix))
 
     y = odeint(physics_model.dynamical_model, init, tspan, args=(physics_model.adjacency_matrix,omega_value))
 

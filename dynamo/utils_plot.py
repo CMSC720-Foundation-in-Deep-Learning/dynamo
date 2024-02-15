@@ -6,7 +6,7 @@ def plot_timeseries(y, t):
     Plot all the time series in the columns of the numpy array y against t (in the x axis).
     y label is 'Time series  (arbitrary units)'.
     x label is 'Time (arbitrary units)'.
-    Legends should be Node 1, Node 2, and so on.
+    Legends should be Node 1, Node 2, and so on.python
     '''
     num_nodes = y.shape[1]
     for i in range(num_nodes):
